@@ -10,10 +10,11 @@ import OngoingGameControls from "@/app/(protected)/game/[id]/_components/ongoing
 import {Separator} from "@/components/ui/separator";
 import {addPlayer} from "@/services/game-service";
 import FinishedGameStats from "@/app/(protected)/game/[id]/_components/finished-game-stats";
+import WheelOfPlayers from "@/components/wheel-of-players";
 
 export function Page({params}: { params: Promise<{ id: string }> }) {
 
-    const {games} = useGameData();
+    const {games, players} = useGameData();
     const [game, setGame] = useState<Game | undefined>();
 
 
@@ -35,6 +36,12 @@ export function Page({params}: { params: Promise<{ id: string }> }) {
         await addPlayer(game!.id, player.id)
     }
 
+    function getPlayersInGame() {
+        return game!.playerIds.map(id => {
+            return players.find(p => p.id === id)?.name ?? "Unknown";
+        })
+    }
+
     return (
         <div className="flex flex-col gap-4 p-4">
             <p className="text-xs font-light">#{game.id}</p>
@@ -45,6 +52,8 @@ export function Page({params}: { params: Promise<{ id: string }> }) {
                         <CurrentRound game={game}/>
                         <Separator/>
                         <AddPlayer game={game} onAdd={handleAddPlayer}/>
+                        <Separator/>
+                        <WheelOfPlayers players={getPlayersInGame()}/>
                         <Separator/>
                         <OngoingGameStats game={game}/>
                         <Separator/>
