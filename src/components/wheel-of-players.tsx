@@ -3,7 +3,7 @@
 import React, {useState} from "react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import DiceLoading from "@/components/dice-loading";
+import {LoaderCircle} from "lucide-react";
 
 type WheelOfPlayersProps = {
     players: string[];
@@ -28,7 +28,7 @@ const WheelOfPlayers = ({players}: WheelOfPlayersProps) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="default">Assign Seats 🎲</Button>
+                <Button variant="default">Assign Seats</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md text-center">
                 <DialogHeader>
@@ -38,13 +38,13 @@ const WheelOfPlayers = ({players}: WheelOfPlayersProps) => {
                 {phase === "idle" && (
                     <div className="flex flex-col items-center gap-4">
                         <p className="text-muted-foreground">Click start to shuffle players into random seats!</p>
-                        <Button onClick={startAssignment}>Start 🎉</Button>
+                        <Button onClick={startAssignment}>Start</Button>
                     </div>
                 )}
 
                 {phase === "animating" && (
                     <div className="flex justify-center items-center h-40">
-                        <DiceLoading/>
+                        <LoaderCircle className="animate-spin text-muted-foreground" size={48}/>
                     </div>
                 )}
 

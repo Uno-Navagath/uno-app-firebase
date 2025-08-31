@@ -6,6 +6,7 @@ import {auth} from "@/lib/firebase/client";
 import {createOrUpdatePlayer} from "@/services/player-service";
 import type {Player} from "@/models/types";
 import {redirect, usePathname} from "next/navigation";
+import {Skeleton} from "@/components/ui/skeleton";
 
 
 type AuthContextType = {
@@ -52,6 +53,17 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         }
     }, [pathname, player, loading]);
 
+    if (loading) {
+        return (
+            <div className="space-y-2 p-4">
+                <Skeleton className="h-6 w-32 rounded"/> {/* Title */}
+                <Skeleton className="h-4 w-full rounded"/> {/* Subtitle */}
+                <Skeleton className="h-24 w-full rounded"/> {/* Card or list */}
+                <Skeleton className="h-24 w-full rounded"/>
+                <Skeleton className="h-24 w-full rounded"/>
+            </div>
+        );
+    }
     return (
         <AuthContext.Provider value={{player, loading}}>
             {children}
