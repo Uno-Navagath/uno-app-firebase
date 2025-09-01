@@ -1,16 +1,15 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import {getApp, getApps, initializeApp} from "firebase/app";
 import {getAuth, GoogleAuthProvider} from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import {getFirestore} from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDuuWFuk8PUNhtDRXD7gJ8T5V2ifWKYpJY",
-    authDomain: "uno-score-app.firebaseapp.com",
-    projectId: "uno-score-app",
-    storageBucket: "uno-score-app.firebasestorage.app",
-    messagingSenderId: "856908167094",
-    appId: "1:856908167094:web:ba0e522f1664b968393317"
-}
-
+    apiKey: "AIzaSyCBg0Y-j24P_lSjxIsUcDXKH5alslCOLFc",
+    authDomain: "uno-app-firebase.firebaseapp.com",
+    projectId: "uno-app-firebase",
+    storageBucket: "uno-app-firebase.firebasestorage.app",
+    messagingSenderId: "814054191281",
+    appId: "1:814054191281:web:6b99a7669bebdd0a1af290"
+};
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);

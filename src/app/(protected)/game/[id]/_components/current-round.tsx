@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Game, Player, Score } from "@/models/types";
 import { useGameData } from "@/components/providers/game-data-provider";
 import { Card } from "@/components/ui/card";
@@ -30,30 +30,25 @@ const CurrentRound = ({ game }: { game: Game }) => {
 
     const isHost = player?.id === game.hostId;
 
-    // Store scores as strings → avoids forced "0" & keyboard closing issues
-    const [scores, setScores] = useState<Record<string, string>>(
-        Object.fromEntries(game.playerIds.map((id) => [id, ""]))
-    );
-
-    const handleScoreChange = (id: string, value: string) => {
-        // allow empty string for clearing, otherwise store raw string
-        if (/^\d*$/.test(value)) {
-            setScores((prev) => ({ ...prev, [id]: value }));
-        }
-    };
+    // Refs for all inputs
+    const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
     const handleSubmitRound = async () => {
         setAddingScore(true);
-
-        const playerScores: Score[] = game.playerIds.map((id) => ({
-            playerId: id,
-            score: Number(scores[id] || 0),
-        }));
-
         try {
+            const playerScores: Score[] = game.playerIds.map((id) => {
+                const rawValue = inputRefs.current[id]?.value || "0";
+                return { playerId: id, score: Number(rawValue) };
+            });
+
             await addRound(game.id, playerScores);
-            // reset input for next round
-            setScores(Object.fromEntries(game.playerIds.map((id) => [id, ""])));
+
+            // reset input fields
+            game.playerIds.forEach((id) => {
+                if (inputRefs.current[id]) {
+                    inputRefs.current[id]!.value = "";
+                }
+            });
         } finally {
             setAddingScore(false);
         }
@@ -80,7 +75,6 @@ const CurrentRound = ({ game }: { game: Game }) => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* optional average toggle */}
                     <Switch title="Average" disabled />
                     {isHost && (
                         <DropdownMenu>
@@ -108,13 +102,14 @@ const CurrentRound = ({ game }: { game: Game }) => {
             {/* Score Input Row */}
             <div className="flex items-center gap-2">
                 <Input
+                    ref={(el) => {
+                        inputRefs.current[player.id] = el;
+                    }}
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
                     placeholder="0"
                     className="text-right"
-                    value={scores[player.id] ?? ""}
-                    onChange={(e) => handleScoreChange(player.id, e.target.value)}
                 />
             </div>
         </Card>

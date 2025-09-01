@@ -15,7 +15,7 @@ const Header = () => {
         <div className="flex sticky top-0 z-20 bg-background items-center justify-between p-4">
             <Logo size="sm"/>
             <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="bg-yellow-300 text-yellow-900">
                     <Link href="/game/new">Create Game</Link>
                 </Button>
             </div>

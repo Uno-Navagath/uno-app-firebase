@@ -8,14 +8,20 @@ import Rounds from "@/app/(protected)/game/[id]/_components/rounds";
 import AddPlayer from "@/app/(protected)/game/[id]/_components/add-player";
 import OngoingGameControls from "@/app/(protected)/game/[id]/_components/ongoing-game-controls";
 import {Separator} from "@/components/ui/separator";
-import {addPlayer} from "@/services/game-service";
+import {addPlayer, deleteGame} from "@/services/game-service";
 import FinishedGameStats from "@/app/(protected)/game/[id]/_components/finished-game-stats";
 import WheelOfPlayers from "@/components/wheel-of-players";
+import {Button} from "@/components/ui/button";
+import {Trash2} from "lucide-react";
+import ConfirmationDialog from "@/components/confirmation-dialog";
+import {redirect} from "next/navigation";
 
 export function Page({params}: { params: Promise<{ id: string }> }) {
 
     const {games, players} = useGameData();
     const [game, setGame] = useState<Game | undefined>();
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 
     useEffect(() => {
@@ -42,9 +48,28 @@ export function Page({params}: { params: Promise<{ id: string }> }) {
         })
     }
 
+    async function handleDeleteGame() {
+        setDeleteDialogOpen(false);
+        if (!game) return;
+        await deleteGame(game.id);
+
+        redirect('/');
+    }
+
     return (
         <div className="flex flex-col gap-4 p-4">
-            <p className="text-xs font-light">#{game.id}</p>
+            <div className="flex flex-row items-center justify-between">
+                <p className="text-xs font-light">#{game.id}</p>
+                {
+                    !isOngoing && (
+                        <Button variant="outline" size="sm" onClick={event => {
+                            setDeleteDialogOpen(true);
+                        }}>
+                            <Trash2/>
+                        </Button>
+                    )
+                }
+            </div>
             <Separator/>
             {
                 isOngoing ? (
@@ -70,6 +95,8 @@ export function Page({params}: { params: Promise<{ id: string }> }) {
                 )
             }
 
+            <ConfirmationDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} title="Delete Game?"
+                                description="Are you sure you want to delete the game?" onConfirm={handleDeleteGame}/>
         </div>
     );
 }
