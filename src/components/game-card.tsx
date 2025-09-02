@@ -51,7 +51,6 @@ const RoundList = ({rounds, players}: { rounds: Round[]; players: Player[] }) =>
 const GameCard = (
     {game, players}: { game: Game; players: Player[] }
 ) => {
-    const winner = players.find((p) => p.id === game.winnerId) ?? null;
 
     const formattedDate = game.createdAt
         ? format(game.createdAt.toDate(), "MMM d, yyyy")
@@ -65,9 +64,8 @@ const GameCard = (
 
     const rounds = game.rounds ?? [];
     const roundsCount = rounds.length;
-    const playerCount = players.length;
+    const playerCount = game.playerIds.length;
 
-    // Leader logic (for ongoing)
     let leader: Player | null = null;
     if (roundsCount > 0) {
         const totals = new Map<string, number>();
@@ -76,6 +74,7 @@ const GameCard = (
                 totals.set(s.playerId, (totals.get(s.playerId) ?? 0) + s.score)
             )
         );
+        // sort ascending because least score is better
         const sorted = [...totals.entries()].sort((a, b) => a[1] - b[1]);
         leader = players.find((p) => p.id === sorted[0]?.[0]) ?? null;
     }
@@ -100,16 +99,6 @@ const GameCard = (
             </span>
                         {roundsCount === 0 ? (
                             <span className="italic text-muted-foreground">—</span>
-                        ) : game.state === "Finished" && winner ? (
-                            <div className="flex items-center gap-2">
-                                <Avatar className="h-6 w-6">
-                                    <AvatarImage src={winner.avatar} alt={winner.name}/>
-                                    <AvatarFallback>
-                                        {winner.name?.charAt(0).toUpperCase() ?? "?"}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium">{winner.name}</span>
-                            </div>
                         ) : leader ? (
                             <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">

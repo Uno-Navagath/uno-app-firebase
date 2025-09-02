@@ -2,7 +2,7 @@ import React from "react";
 import {Card} from "@/components/ui/card";
 import {Crown} from "lucide-react";
 import PlayerAvatar from "@/components/player-avatar";
-import {LeaderboardStat} from "@/app/(protected)/leaderboard/page";
+import {LeaderboardStat} from "@/lib/leaderboard-utils";
 
 const LeaderboardPlayerCard: React.FC<{ stat: LeaderboardStat; rank: number }> = ({stat, rank}) => {
     const avg = stat.avgScore.toFixed(0);

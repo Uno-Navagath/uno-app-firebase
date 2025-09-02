@@ -1,25 +1,28 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { Game, Player } from "@/models/types";
-import { useGameData } from "@/components/providers/game-data-provider";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import {
-    ResponsiveContainer,
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    Legend,
-} from "recharts";
-import { chartColors } from "@/lib/utils";
+import React, {useMemo} from "react";
+import {Game, Player} from "@/models/types";
+import {useGameData} from "@/components/providers/game-data-provider";
+import {Card} from "@/components/ui/card";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {Legend, Line, LineChart, ResponsiveContainer, XAxis, YAxis,} from "recharts";
+import {chartColors} from "@/lib/utils";
+import PlayerBreakdown from "@/app/(protected)/game/[id]/_components/player-breakdown";
 
 type ChartRow = {
     round: string;
     [playerName: string]: string | number;
 };
+
+type PlayerStat =
+    {
+        total: number
+        avg: number
+        best: number
+        id: string
+        name: string
+        avatar: string
+    }
 
 const FinishedGameStats = ({ game }: { game: Game }) => {
     const { players } = useGameData();
@@ -50,21 +53,21 @@ const FinishedGameStats = ({ game }: { game: Game }) => {
     });
 
     // Leaderboard
-    const leaderboard = [...gamePlayers]
+    const leaderboard: PlayerStat[] = [...gamePlayers]
         .map((p) => ({
             ...p,
             total: playerTotals[p.id] || 0,
             avg: game.rounds.length
                 ? (playerTotals[p.id] || 0) / game.rounds.length
                 : 0,
-            best: Math.max(
-                0,
+            best: Math.min(
                 ...game.rounds.map(
-                    (r) => r.scores.find((s) => s.playerId === p.id)?.score ?? 0
+                    (r) => r.scores.find((s) => s.playerId === p.id)?.score ?? Infinity
                 )
             ),
         }))
-        .sort((a, b) => b.total - a.total);
+        // sort ascending because least total is better
+        .sort((a, b) => a.total - b.total);
 
     // Winner (explicit or top scorer)
     const winner =
@@ -139,24 +142,7 @@ const FinishedGameStats = ({ game }: { game: Game }) => {
             </Card>
 
             {/* Player Breakdown */}
-            <Card className="p-4 space-y-3">
-                <h2 className="text-lg font-bold">Player Breakdown</h2>
-                <Separator />
-                {leaderboard.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                                <AvatarImage src={p.avatar} alt={p.name} />
-                                <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span className="font-medium">{p.name}</span>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-              Total: {p.total} | Avg: {p.avg.toFixed(1)} | Best: {p.best}
-            </span>
-                    </div>
-                ))}
-            </Card>
+            <PlayerBreakdown leaderboard={leaderboard}/>
 
             {/* Progression Chart */}
             <Card className="p-4">

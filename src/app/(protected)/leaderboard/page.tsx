@@ -2,25 +2,18 @@
 
 import React, {useMemo, useState} from "react";
 import {useGameData} from "@/components/providers/game-data-provider";
-import type {Game, Player} from "@/models/types";
+import type {Game} from "@/models/types";
 import {Card} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {DateRange} from "react-day-picker";
 import LeaderboardPlayerCard from "@/app/(protected)/leaderboard/_components/leaderboard-player-card";
 import LeaderboardFilters from "@/app/(protected)/leaderboard/_components/leaderboard-filters";
+import {computeLeaderboard} from "@/lib/leaderboard-utils";
 
 /* ----------------------- Types ----------------------- */
 export type DateFilter = "all" | "today" | "week" | "30days" | "custom";
 export type SortKey = "rating" | "games" | "avg" | "total" | "name";
-
-export interface LeaderboardStat {
-    player: Player;
-    gamesPlayed: number;
-    totalScore: number;
-    avgScore: number;
-    rating: number;
-}
 
 /* ----------------------- Helpers ----------------------- */
 const startOfDay = (d: Date) => {
@@ -44,54 +37,6 @@ const toDate = (v: unknown): Date => {
     if (v instanceof Date) return v;
     if (isTimestampLike(v)) return v.toDate();
     return new Date(String(v));
-};
-
-const computeLeaderboard = (players: Player[], games: Game[]): LeaderboardStat[] => {
-    const map = new Map(players.map(p => [p.id, { scores: [] as number[], gamesPlayed: 0, roundsPlayed: 0 }]));
-
-    for (const g of games) {
-        const pids = g.playerIds ?? [];
-        for (const pid of pids) {
-            const entry = map.get(pid);
-            if (entry) entry.gamesPlayed += 1;
-        }
-        g.rounds?.forEach(r => {
-            r.scores?.forEach(s => {
-                const entry = map.get(s.playerId);
-                if (entry) {
-                    const score = typeof s.score === "number" && !isNaN(s.score) ? s.score : 0;
-                    entry.scores.push(score);
-                    entry.roundsPlayed += 1;
-                }
-            });
-        });
-    }
-
-    const stats: LeaderboardStat[] = players.map(p => {
-        const data = map.get(p.id)!;
-        const totalScore = data.scores.reduce((a, b) => a + b, 0);
-        const avgScore = data.scores.length > 0 ? totalScore / data.scores.length : 0;
-
-        // If no rounds/games, mark rating as Infinity (always last)
-        const rating = avgScore === null || data.gamesPlayed === 0 ? Number.POSITIVE_INFINITY : avgScore;
-
-        return {
-            player: p,
-            gamesPlayed: data.gamesPlayed,
-            roundsPlayed: data.roundsPlayed,
-            totalScore,
-            avgScore,
-            rating
-        };
-    });
-
-    // Sort: lower rating first, more games next, more rounds next, name last
-    return stats.sort((a, b) => {
-        if (a.rating !== b.rating) return a.rating - b.rating;
-        if (a.gamesPlayed !== b.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
-        // if (a.roundsPlayed !== b.roundsPlayed) return b.roundsPlayed - a.roundsPlayed;
-        return a.player.name.localeCompare(b.player.name);
-    });
 };
 
 /* ----------------------- Date Filter ----------------------- */

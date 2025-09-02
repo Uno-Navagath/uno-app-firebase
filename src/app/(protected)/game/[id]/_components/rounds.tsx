@@ -29,23 +29,30 @@ const Rounds = ({game}: { game: Game }) => {
                     <h3 className="font-semibold">Round {idx + 1}</h3>
                     <Separator/>
                     <div className="space-y-2">
-                        {gamePlayers.map((p) => {
-                            const score = round.scores.find((s) => s.playerId === p!.id);
-                            return (
-                                <div
-                                    key={p!.id}
-                                    className="flex items-center justify-between"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <PlayerAvatar player={p!} size={"xs"}/>
-                                        <span className="text-sm font-medium">{p!.name}</span>
-                                    </div>
-                                    <span className="text-sm font-semibold">
+                        {[...gamePlayers]
+                            .sort((a, b) => {
+                                const scoreA = round.scores.find((s) => s.playerId === a!.id)?.score ?? Infinity;
+                                const scoreB = round.scores.find((s) => s.playerId === b!.id)?.score ?? Infinity;
+                                return scoreA - scoreB; // ascending
+                            })
+                            .map((p) => {
+                                if (!p) return null;
+                                const score = round.scores.find((s) => s.playerId === p.id);
+                                return (
+                                    <div
+                                        key={p.id}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <PlayerAvatar player={p} size="xs"/>
+                                            <span className="text-sm font-medium">{p.name}</span>
+                                        </div>
+                                        <span className="text-sm font-semibold">
                     {score ? score.score : "-"}
-                  </span>
-                                </div>
-                            );
-                        })}
+                </span>
+                                    </div>
+                                );
+                            })}
                     </div>
                 </Card>
             ))}

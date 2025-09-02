@@ -29,16 +29,16 @@ const LeaderboardFilters: React.FC<{
                     </SelectContent>
                 </Select>
 
-                <Select value={sortKey} onValueChange={v => setSortKey(v as SortKey)}>
+                {/*<Select value={sortKey} onValueChange={v => setSortKey(v as SortKey)}>
                     <SelectTrigger className="w-36"><SelectValue placeholder="Sort by"/></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="rating">Rating</SelectItem>
-                        {/*<SelectItem value="games">Games</SelectItem>*/}
-                        {/*<SelectItem value="avg">Average</SelectItem>*/}
+                        <SelectItem value="games">Games</SelectItem>
+                        <SelectItem value="avg">Average</SelectItem>
                         <SelectItem value="total">Total</SelectItem>
                         <SelectItem value="name">Name</SelectItem>
                     </SelectContent>
-                </Select>
+                </Select>*/}
 
                 {dateFilter === "custom" && (
                     <Popover>

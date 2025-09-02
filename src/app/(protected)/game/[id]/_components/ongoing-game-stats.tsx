@@ -8,6 +8,7 @@ import {Legend, Line, LineChart, ResponsiveContainer, XAxis, YAxis,} from "recha
 import {Separator} from "@radix-ui/react-menu";
 import {chartColors} from "@/lib/utils";
 import {Avatar, AvatarImage} from "@/components/ui/avatar";
+import PlayerBreakdown from "@/app/(protected)/game/[id]/_components/player-breakdown";
 
 type ChartRow = {
     round: string;
@@ -34,7 +35,7 @@ const OngoingGameStats = ({game}: { game: Game }) => {
         });
     });
 
-    // Leaderboard sorted
+    // Leaderboard
     const leaderboard = [...gamePlayers]
         .map((p) => ({
             ...p,
@@ -42,14 +43,14 @@ const OngoingGameStats = ({game}: { game: Game }) => {
             avg: game.rounds.length
                 ? (playerTotals[p.id] || 0) / game.rounds.length
                 : 0,
-            best: Math.max(
-                0,
+            best: Math.min(
                 ...game.rounds.map(
-                    (r) => r.scores.find((s) => s.playerId === p.id)?.score ?? 0
+                    (r) => r.scores.find((s) => s.playerId === p.id)?.score ?? Infinity
                 )
             ),
         }))
-        .sort((a, b) => b.total - a.total);
+        // sort ascending because least total is better
+        .sort((a, b) => a.total - b.total);
 
     // Chart data: cumulative score per round
     const chartData: ChartRow[] = useMemo(() => {
@@ -94,6 +95,8 @@ const OngoingGameStats = ({game}: { game: Game }) => {
                     </p>
                 )}
             </Card>
+
+            <PlayerBreakdown leaderboard={leaderboard}/>
 
             {/* Quick Game Info */}
             <Card className="p-4 gap-y-2">
