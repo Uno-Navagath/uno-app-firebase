@@ -7,8 +7,8 @@ import {Card} from "@/components/ui/card";
 import {Legend, Line, LineChart, ResponsiveContainer, XAxis, YAxis,} from "recharts";
 import {Separator} from "@radix-ui/react-menu";
 import {chartColors} from "@/lib/utils";
-import {Avatar, AvatarImage} from "@/components/ui/avatar";
 import PlayerBreakdown from "@/app/(protected)/game/[id]/_components/player-breakdown";
+import PlayerAvatar from "@/components/player-avatar";
 
 type ChartRow = {
     round: string;
@@ -76,9 +76,7 @@ const OngoingGameStats = ({game}: { game: Game }) => {
                         <div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <Avatar className="h-6 w-6">
-                                        <AvatarImage src={leaderboard[0].avatar} alt={leaderboard[0].name}/>
-                                    </Avatar>
+                                    <PlayerAvatar player={leaderboard[0]} size="xs"/>
                                     <span className="text-sm font-medium">
                                     {leaderboard[0].name}
                                 </span>

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Separator} from "@/components/ui/separator";
 import {Card} from "@/components/ui/card";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import PlayerAvatar from "@/components/player-avatar";
 
 const PlayerBreakdown = (
     {leaderboard}: {
@@ -15,10 +15,7 @@ const PlayerBreakdown = (
             {leaderboard.map((p) => (
                 <div key={p.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={p.avatar} alt={p.name}/>
-                            <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                        <PlayerAvatar player={p} size="sm"/>
                         <span className="font-medium">{p.name}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">

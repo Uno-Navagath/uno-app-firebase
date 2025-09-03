@@ -16,7 +16,7 @@ const LeaderboardFilters: React.FC<{
     setSortKey: (v: SortKey) => void;
 }> = ({dateFilter, setDateFilter, customRange, setCustomRange, sortKey, setSortKey}) => {
     return (
-        <div className="flex flex-col gap-2 w-full">
+        <div className="flex flex-col gap-2">
             <div className="flex gap-2 w-full flex-wrap">
                 <Select value={dateFilter} onValueChange={v => setDateFilter(v as DateFilter)}>
                     <SelectTrigger className="w-36"><SelectValue placeholder="Date filter"/></SelectTrigger>

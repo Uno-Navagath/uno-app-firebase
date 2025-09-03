@@ -7,9 +7,9 @@ import {Card} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {DateRange} from "react-day-picker";
-import LeaderboardPlayerCard from "@/app/(protected)/leaderboard/_components/leaderboard-player-card";
 import LeaderboardFilters from "@/app/(protected)/leaderboard/_components/leaderboard-filters";
 import {computeLeaderboard} from "@/lib/leaderboard-utils";
+import PlayerCard from "@/components/player-card";
 
 /* ----------------------- Types ----------------------- */
 export type DateFilter = "all" | "today" | "week" | "30days" | "custom";
@@ -91,7 +91,7 @@ const LeaderboardPage: React.FC = () => {
         [players, filteredGames]
     );
 
-    const sorted = useMemo(() => {
+    /*const sorted = useMemo(() => {
         const copy = [...leaderboard];
         switch (sortKey) {
             case "rating":
@@ -111,34 +111,35 @@ const LeaderboardPage: React.FC = () => {
                 break;
         }
         return copy;
-    }, [leaderboard, sortKey]);
+    }, [leaderboard, sortKey]);*/
 
     return (
         <main className="p-4 max-w-4xl mx-auto">
             {/* Header */}
-            <div className="mb-4 flex flex-wrap gap-3 items-center justify-between">
+            <div className="mb-4 flex flex-row gap-3 items-center justify-between">
                 <h1 className="text-xl font-semibold">Leaderboard</h1>
-                <Button variant="outline" size="sm" onClick={() => {
+                {/*<Button variant="outline" size="sm" onClick={() => {
                     setDateFilter("all");
                     setCustomRange(undefined);
                     setSortKey("rating");
-                }}>Reset Filters</Button>
-            </div>
+                }}>Reset Filters</Button>*/}
 
-            <LeaderboardFilters
-                dateFilter={dateFilter} setDateFilter={setDateFilter}
-                customRange={customRange} setCustomRange={setCustomRange}
-                sortKey={sortKey} setSortKey={setSortKey}
-            />
+                <LeaderboardFilters
+                    dateFilter={dateFilter} setDateFilter={setDateFilter}
+                    customRange={customRange} setCustomRange={setCustomRange}
+                    sortKey={sortKey} setSortKey={setSortKey}
+                />
+
+            </div>
 
             <div className="h-4"/>
 
-            <ScrollArea className="h-[70vh]">
+            <ScrollArea className="flex-1">
                 <div className="flex flex-col gap-3">
-                    {sorted.length === 0 ? (
+                    {leaderboard.length === 0 ? (
                         <Card className="p-4 text-sm text-muted-foreground">No stats available.</Card>
                     ) : (
-                        sorted.map((s, idx) => <LeaderboardPlayerCard key={s.player.id} stat={s} rank={idx + 1}/>)
+                        leaderboard.map((s, idx) => <PlayerCard key={s.player.id} stat={s} rank={idx + 1}/>)
                     )}
                 </div>
             </ScrollArea>

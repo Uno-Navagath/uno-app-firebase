@@ -4,7 +4,7 @@ import {Crown} from "lucide-react";
 import PlayerAvatar from "@/components/player-avatar";
 import {LeaderboardStat} from "@/lib/leaderboard-utils";
 
-const LeaderboardPlayerCard: React.FC<{ stat: LeaderboardStat; rank: number }> = ({stat, rank}) => {
+const PlayerCard: React.FC<{ stat: LeaderboardStat; rank: number }> = ({stat, rank}) => {
     const avg = stat.avgScore.toFixed(0);
     const getCrownColor = (rank: number) => {
         switch (rank) {
@@ -42,4 +42,4 @@ const LeaderboardPlayerCard: React.FC<{ stat: LeaderboardStat; rank: number }> =
     );
 };
 
-export default LeaderboardPlayerCard;
+export default PlayerCard;

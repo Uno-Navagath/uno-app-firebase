@@ -4,45 +4,51 @@ import {format, formatDistanceToNow} from "date-fns";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import Link from "next/link";
 import {Badge} from "./ui/badge";
-import {Avatar, AvatarFallback, AvatarImage} from "./ui/avatar";
 import {Separator} from "./ui/separator";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "./ui/dialog";
 import {Button} from "@/components/ui/button";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import PlayerAvatar from "@/components/player-avatar";
+import {Crown} from "lucide-react";
 
 const RoundList = ({rounds, players}: { rounds: Round[]; players: Player[] }) => {
+
     return (
         <ScrollArea className="h-[300px] pr-4">
             <div className="space-y-4">
-                {rounds.map((round, idx) => (
-                    <div key={round.id} className="p-3 rounded-md border bg-muted/30">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium">Round {idx + 1}</span>
-                            <span className="text-xs text-muted-foreground">
-                {format(round.createdAt.toDate(), "HH:mm, MMM d")}
-              </span>
+                {rounds.map((round, idx) => {
+                    const sortedScores = [...round.scores].sort((a, b) => a.score - b.score);
+                    const winner = sortedScores[0];
+                    return (
+                        <div key={round.id} className="p-3 rounded-md border bg-muted/30">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium">Round {idx + 1}</span>
+                                <div className="flex items-center gap-2">
+                                    <Crown className="h-3 w-3 text-yellow-400"/>
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                        {winner ? players.find((p) => p.id === winner.playerId)?.name : "Tie"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                {[...round.scores]
+                                    .sort((a, b) => a.score - b.score) // ASC by score
+                                    .map((s) => {
+                                        const player = players.find((p) => p.id === s.playerId);
+                                        return (
+                                            <div key={s.playerId} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <PlayerAvatar player={player!} size="xs"/>
+                                                    <span className="text-sm">{player?.name ?? "Unknown"}</span>
+                                                </div>
+                                                <span className="font-medium">{s.score}</span>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
                         </div>
-                        <div className="space-y-1">
-                            {round.scores.map((s) => {
-                                const player = players.find((p) => p.id === s.playerId);
-                                return (
-                                    <div key={s.playerId} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-6 w-6">
-                                                <AvatarImage src={player?.avatar} alt={player?.name}/>
-                                                <AvatarFallback>
-                                                    {player?.name?.charAt(0).toUpperCase() ?? "?"}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <span className="text-sm">{player?.name ?? "Unknown"}</span>
-                                        </div>
-                                        <span className="font-medium">{s.score}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </ScrollArea>
     );
@@ -101,12 +107,7 @@ const GameCard = (
                             <span className="italic text-muted-foreground">—</span>
                         ) : leader ? (
                             <div className="flex items-center gap-2">
-                                <Avatar className="h-6 w-6">
-                                    <AvatarImage src={leader.avatar} alt={leader.name}/>
-                                    <AvatarFallback>
-                                        {leader.name?.charAt(0).toUpperCase() ?? "?"}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <PlayerAvatar player={leader} size="xs"/>
                                 <span className="font-medium">{leader.name}</span>
                             </div>
                         ) : (
