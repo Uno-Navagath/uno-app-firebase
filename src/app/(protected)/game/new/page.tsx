@@ -55,6 +55,8 @@ function GameCreationPage() {
     const {player: currentPlayer} = useAuth();
     const {players} = useGameData();
 
+    const [createGameLoading, setCreateGameLoading] = useState(false);
+
     const [selected, setSelected] = useState<string[]>(
         currentPlayer ? [currentPlayer.id] : []
     );
@@ -77,6 +79,7 @@ function GameCreationPage() {
 
     const handleCreateGame = async () => {
         console.log("Creating game with players:", selected);
+        setCreateGameLoading(true);
         const game = await createGame(
             currentPlayer!.id,
             selected,
@@ -133,10 +136,10 @@ function GameCreationPage() {
             {/* Sticky create button */}
             <Button
                 onClick={handleCreateGame}
-                disabled={!canCreate}
+                disabled={!canCreate || createGameLoading}
                 className="w-full"
             >
-                Create Game
+                {createGameLoading ? "Creating..." : "Create Game" + (canCreate ? ` (${selected.length})` : " (minimum 2 players)")}
             </Button>
         </div>
     );

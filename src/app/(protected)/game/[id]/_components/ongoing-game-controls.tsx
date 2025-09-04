@@ -26,13 +26,13 @@ const OngoingGameControls = ({
     }
 
     return (
-        <div className="sticky bottom-2 flex items-center justify-between gap-2">
-            <Button variant="destructive"
+        <div className="flex items-center justify-between gap-2">
+            {/*<Button variant="destructive"
                     onClick={event => {
                         event.preventDefault();
                         setOpenDiscardDialog(true);
                     }}
-            >Discard Game</Button>
+            >Discard Game</Button>*/}
             <Button variant="default" className="flex-1" onClick={event => {
                 event.preventDefault();
                 setOpenFinishDialog(true);

@@ -19,10 +19,16 @@ export type Game = {
     hostId: string;
     createdAt: Timestamp;
     playerIds: string[];
+    playerOptions: PlayerOption[];
     winnerId?: string;
     state: GameState;
     rounds: Round[];
 };
+
+export type PlayerOption = {
+    id: string;
+    averageEnabled: boolean;
+}
 
 export type Round = {
     id: string;

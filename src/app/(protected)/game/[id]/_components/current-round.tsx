@@ -75,7 +75,6 @@ const CurrentRound = ({ game }: { game: Game }) => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Switch title="Average" disabled />
                     {isHost && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -93,6 +92,9 @@ const CurrentRound = ({ game }: { game: Game }) => {
                                 ) : (
                                     <DropdownMenuItem disabled>Cannot remove</DropdownMenuItem>
                                 )}
+                                <DropdownMenuItem disabled>
+                                    Enable Average
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}
@@ -128,7 +130,7 @@ const CurrentRound = ({ game }: { game: Game }) => {
             <Button
                 disabled={addingScore}
                 onClick={handleSubmitRound}
-                className="w-full"
+                className="sticky bottom-4 w-full"
             >
                 {addingScore ? "Submitting..." : "Submit Round"}
             </Button>

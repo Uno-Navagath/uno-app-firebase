@@ -11,6 +11,11 @@ import LeaderboardFilters from "@/app/(protected)/leaderboard/_components/leader
 import {computeLeaderboard} from "@/lib/leaderboard-utils";
 import PlayerCard from "@/components/player-card";
 
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {format} from "date-fns";
+import {Calendar} from "@/components/ui/calendar";
+import {XIcon} from "lucide-react";
+
 /* ----------------------- Types ----------------------- */
 export type DateFilter = "all" | "today" | "week" | "30days" | "custom";
 export type SortKey = "rating" | "games" | "avg" | "total" | "name";
@@ -131,7 +136,31 @@ const LeaderboardPage: React.FC = () => {
                 />
 
             </div>
-
+            {dateFilter === "custom" && (
+                <div className="flex flex-row gap-2 items-center">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                className="flex-1 w-full">{customRange?.from && customRange?.to ? `${format(customRange.from, 'MM/dd')} - ${format(customRange.to, 'MM/dd')}` : 'Select Range'}</Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2">
+                            <Calendar
+                                mode="range"
+                                selected={customRange}
+                                onSelect={setCustomRange}
+                                className="rounded-md border"
+                            />
+                        </PopoverContent>
+                    </Popover>
+                    <Button variant="ghost" size="icon" onClick={() => {
+                        setDateFilter("all");
+                        setCustomRange(undefined);
+                        setSortKey("rating");
+                    }}>
+                        <XIcon/>
+                    </Button>
+                </div>
+            )}
             <div className="h-4"/>
 
             <ScrollArea className="flex-1">

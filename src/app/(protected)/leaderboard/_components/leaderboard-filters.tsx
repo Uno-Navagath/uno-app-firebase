@@ -2,9 +2,6 @@ import React from "react";
 import {DateRange} from "react-day-picker";
 import {Button} from "@/components/ui/button";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {format} from "date-fns";
-import {Calendar} from "@/components/ui/calendar";
 import {DateFilter, SortKey} from "@/app/(protected)/leaderboard/page";
 
 const LeaderboardFilters: React.FC<{
@@ -39,23 +36,6 @@ const LeaderboardFilters: React.FC<{
                         <SelectItem value="name">Name</SelectItem>
                     </SelectContent>
                 </Select>*/}
-
-                {dateFilter === "custom" && (
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                className="w-36">{customRange?.from && customRange?.to ? `${format(customRange.from, 'MM/dd')} - ${format(customRange.to, 'MM/dd')}` : 'Select Range'}</Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-2">
-                            <Calendar
-                                mode="range"
-                                selected={customRange}
-                                onSelect={setCustomRange}
-                                className="rounded-md border"
-                            />
-                        </PopoverContent>
-                    </Popover>
-                )}
             </div>
         </div>
     );

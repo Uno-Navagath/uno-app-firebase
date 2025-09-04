@@ -1,4 +1,4 @@
-import type { Game, Player } from "@/models/types";
+import type {Game, Player} from "@/models/types";
 
 /* ---------------- Types ---------------- */
 export interface LeaderboardStat {
@@ -6,86 +6,126 @@ export interface LeaderboardStat {
     gamesPlayed: number;
     roundsPlayed: number;
     totalScore: number;
-    avgScore: number;
-    rating: number; // lower = better
+    avgPerRound: number;        // raw average (lower is better)
+    adjAvgPerRound: number;     // shrunken average (lower is better) -> used for ranking
+    rating: number;             // convenience: 1 / adjAvgPerRound (higher is better)
+    provisional: boolean;
 }
-/* ---------------- Core Leaderboard Logic ---------------- */
-export const computeLeaderboard = (
+
+
+type Options = {
+    shrinkageRounds?: number;   // K in the formula -> higher = stronger penalty for low-sample
+    minGamesForNonProvisional?: number;
+    minRoundsForNonProvisional?: number;
+    includeZeroRoundPlayers?: boolean; // if true, they appear as provisional at the bottom
+};
+
+
+export function computeLeaderboard(
     players: Player[],
-    games: Game[]
-): LeaderboardStat[] => {
-    // map of player -> accumulator
-    const map = new Map(
-        players.map(p => [
-            p.id,
-            { scores: [] as number[], gamesPlayed: 0, roundsPlayed: 0 },
-        ])
-    );
+    games: Game[],
+    opts: Options = {
+        shrinkageRounds: 12,
+        minGamesForNonProvisional: 3,
+        minRoundsForNonProvisional: 24,
+        includeZeroRoundPlayers: false,
+    }
+): LeaderboardStat[] {
+    const K = opts.shrinkageRounds ?? 12;
+    const MIN_GAMES = opts.minGamesForNonProvisional ?? 3;
+    const MIN_ROUNDS = opts.minRoundsForNonProvisional ?? 24;
+    const INCLUDE_ZERO = opts.includeZeroRoundPlayers ?? false;
 
+    // --- Accumulators ---
+    const acc = new Map<string, { total: number; rounds: number; games: number }>();
+    for (const p of players) acc.set(p.id, {total: 0, rounds: 0, games: 0});
+
+    const allPerRoundScores: number[] = [];
+
+    // --- Ingest finished games only ---
     for (const g of games) {
+        if (!g || g.state === 'Ongoing' || !Array.isArray(g.rounds) || g.rounds.length === 0) continue;
+
         const pids = g.playerIds ?? [];
-
-        if (g.state === 'Ongoing') continue;
-        if (g.rounds.length === 0) continue;
-
+        // count game participation once per player
         for (const pid of pids) {
-            const entry = map.get(pid);
-            if (entry) entry.gamesPlayed += 1;
+            const e = acc.get(pid);
+            if (e) e.games += 1;
         }
 
-        g.rounds?.forEach(r => {
+        // per-round scores
+        for (const r of g.rounds) {
             for (const pid of pids) {
-                const entry = map.get(pid);
-                if (!entry) continue;
+                const e = acc.get(pid);
+                if (!e) continue;
 
-                const score = r.scores.find(s => s.playerId === pid)?.score;
+                const s = r.scores.find(s => s.playerId === pid)?.score;
 
-                if (typeof score === "number" && !isNaN(score)) {
-                    entry.scores.push(score);
-                } else {
-                    // keep your current behavior
-                    entry.scores.push(0);
-                }
+                // UNO: winners usually score 0; missing treated as 0 only if the player is in the game
+                const score =
+                    typeof s === 'number' && Number.isFinite(s) ? s : 0;
 
-                entry.roundsPlayed += 1;
+                e.total += score;
+                e.rounds += 1;
+                allPerRoundScores.push(score);
             }
-        });
+        }
     }
 
-    // --- Tunables ---
-    const K = 2;         // higher -> stronger penalty for few games
-    const EPS = 1e-3;    // floor for avgScore to avoid infinities
+    // If no completed rounds exist, nothing to show
+    if (allPerRoundScores.length === 0) return [];
 
-    // build final stats
-    const stats: LeaderboardStat[] = players.map(p => {
-        const data = map.get(p.id)!;
-        const totalScore = data.scores.reduce((a, b) => a + b, 0);
-        const avgScore = data.scores.length > 0 ? totalScore / data.scores.length : 0;
+    // --- Global mean (μ) of per-round scores across everyone ---
+    const mu =
+        allPerRoundScores.reduce((a, b) => a + b, 0) / allPerRoundScores.length;
 
-        // confidence term: grows with gamesPlayed but saturates to 1
-        const confidence = data.gamesPlayed > 0 ? (data.gamesPlayed / (data.gamesPlayed + K)) : 0;
+    // --- Build leaderboard rows ---
+    const rows: LeaderboardStat[] = players
+        .map(p => {
+            const e = acc.get(p.id)!;
+            const hasRounds = e.rounds > 0;
 
-        // lower avgScore => higher rating; more games => higher rating
-        const denom = Math.max(avgScore, EPS);
-        const rating = confidence * (1 / denom);
+            // If zero rounds and we don't include them, we’ll filter later
+            const total = e.total;
+            const avg = hasRounds ? total / e.rounds : NaN;
 
-        return {
-            player: p,
-            gamesPlayed: data.gamesPlayed,
-            roundsPlayed: data.roundsPlayed,
-            totalScore,
-            avgScore,
-            rating,
-        };
-    });
+            // Empirical-Bayes shrinkage toward μ:
+            // This protects against small-sample luck (good or bad).
+            const adjAvg = hasRounds
+                ? (total + mu * K) / (e.rounds + K)
+                : mu; // neutral baseline if you decide to display them
 
-    const allZero = stats.every(s => s.totalScore === 0);
-    if (allZero) return [];
+            const provisional = e.games < MIN_GAMES || e.rounds < MIN_ROUNDS;
 
-    // sort by rating DESC, then more games, then name
-    return stats.sort((a, b) => {
-        if (a.rating !== b.rating) return b.rating - a.rating;               // DESC
+            return {
+                player: p,
+                gamesPlayed: e.games,
+                roundsPlayed: e.rounds,
+                totalScore: total,
+                avgPerRound: hasRounds ? avg : 0,
+                adjAvgPerRound: adjAvg,
+                rating: 1 / Math.max(adjAvg, 1e-9),
+                provisional,
+            };
+        })
+        .filter(s => INCLUDE_ZERO || s.roundsPlayed > 0);
+
+    // If everyone has zero totals (weird dataset), bail out
+    const allZeroTotals = rows.every(s => s.totalScore === 0);
+    if (allZeroTotals) return [];
+
+    // --- Sort: lower adjusted average first ---
+    rows.sort((a, b) => {
+        if (a.adjAvgPerRound !== b.adjAvgPerRound) {
+            return a.adjAvgPerRound - b.adjAvgPerRound; // ASC (lower is better)
+        }
+        if (a.roundsPlayed !== b.roundsPlayed) return b.roundsPlayed - a.roundsPlayed;
         if (a.gamesPlayed !== b.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
         return a.player.name.localeCompare(b.player.name);
     });
-};
+
+    // Optional: push provisional entries after non-provisionals while keeping internal order
+    const nonProv = rows.filter(r => !r.provisional);
+    const prov = rows.filter(r => r.provisional);
+    return [...nonProv, ...prov];
+}

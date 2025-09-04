@@ -12,7 +12,7 @@ import {addPlayer, deleteGame} from "@/services/game-service";
 import FinishedGameStats from "@/app/(protected)/game/[id]/_components/finished-game-stats";
 import WheelOfPlayers from "@/components/wheel-of-players";
 import {Button} from "@/components/ui/button";
-import {Trash2} from "lucide-react";
+import {LucideTrash2} from "lucide-react";
 import ConfirmationDialog from "@/components/confirmation-dialog";
 import {redirect} from "next/navigation";
 
@@ -60,15 +60,11 @@ export function Page({params}: { params: Promise<{ id: string }> }) {
         <div className="flex flex-col gap-4 p-4">
             <div className="flex flex-row items-center justify-between">
                 <p className="text-xs font-light">#{game.id}</p>
-                {
-                    !isOngoing && (
-                        <Button variant="outline" size="sm" onClick={event => {
-                            setDeleteDialogOpen(true);
-                        }}>
-                            <Trash2/>
-                        </Button>
-                    )
-                }
+                <Button variant="ghost" size="icon" onClick={event => {
+                    setDeleteDialogOpen(true);
+                }} className="text-red-500 hover:text-red-700">
+                    <LucideTrash2/>
+                </Button>
             </div>
             <Separator/>
             {
