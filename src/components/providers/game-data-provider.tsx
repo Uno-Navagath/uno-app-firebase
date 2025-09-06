@@ -4,7 +4,7 @@ import React, {createContext, useContext, useEffect, useState} from "react";
 import {db} from "@/lib/firebase/client";
 import {collection, onSnapshot} from "firebase/firestore";
 import {useAuth} from "@/components/providers/auth-provider";
-import {Skeleton} from "@/components/ui/skeleton";
+import Loading from "@/components/loading";
 
 type GameDataContextType = {
     loading: boolean;
@@ -49,13 +49,7 @@ export const GameDataProvider = ({children}: { children: React.ReactNode }) => {
 
     if (loading) {
         return (
-            <div className="space-y-2 p-4">
-                <Skeleton className="h-6 w-32 rounded" />   {/* Title */}
-                <Skeleton className="h-4 w-full rounded" />  {/* Subtitle */}
-                <Skeleton className="h-24 w-full rounded" /> {/* Card or list */}
-                <Skeleton className="h-24 w-full rounded" />
-                <Skeleton className="h-24 w-full rounded" />
-            </div>
+            <Loading/>
         );
     }
     return (

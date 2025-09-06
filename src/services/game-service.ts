@@ -25,6 +25,7 @@ export const createGame = async (hostId: string, playerIds: string[]): Promise<G
         createdAt: Timestamp.now(),
         playerIds,
         state: "Ongoing",
+        playerOptions: [],
         rounds: []
     };
 
